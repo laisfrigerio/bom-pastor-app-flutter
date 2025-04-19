@@ -1,6 +1,8 @@
 name: Build Android Flutter APK
 
 on:
+  pull_request:
+    branches: ['main']
   push:
     branches: [main]
 
@@ -33,4 +35,13 @@ jobs:
 
       - name: Build APK
         run: flutter build apk --release
+
+      - name: Rename APK file
+        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/bom-pastor-app.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bom-pastor-app-release
+          path: build/app/outputs/flutter-apk/bom-pastor-app.apk
 
