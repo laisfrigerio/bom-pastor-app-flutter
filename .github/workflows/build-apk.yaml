@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: beta
 
     steps:
       - name: Checkout
@@ -17,7 +18,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.18.0'
+          channel: stable
+          flutter-version: 3.19.0
 
       - name: Decode GOOGLE_SHEETS_CREDENTIALS and write to file
         run: |
