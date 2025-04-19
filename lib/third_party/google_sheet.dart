@@ -1,6 +1,7 @@
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:googleapis/sheets/v4.dart' as sheets;
-import 'package:myapp/io/get_assets_file_content.dart';
+
+import 'package:bom_pastor_app/io/get_assets_file_content.dart';
 
 Future<sheets.SheetsApi> _getGoogleSheetClient() async {
   final credentials = await getAssetsFileContent("credentials.json");

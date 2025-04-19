@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/components/student_item.dart';
-import 'package:myapp/models/student_model.dart';
+import 'package:bom_pastor_app/components/student_item.dart';
+import 'package:bom_pastor_app/models/student_model.dart';
 
 class ListStudents extends StatelessWidget {
   const ListStudents({

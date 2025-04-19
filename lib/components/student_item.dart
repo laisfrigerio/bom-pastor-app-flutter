@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/models/student_model.dart';
-import 'package:myapp/config/app_colors.dart';
+import 'package:bom_pastor_app/models/student_model.dart';
+import 'package:bom_pastor_app/config/app_colors.dart';
 
 class StudentItem extends StatelessWidget {
   const StudentItem({
