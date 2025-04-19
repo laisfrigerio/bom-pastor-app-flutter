@@ -1,4 +1,4 @@
-import 'package:myapp/models/student_model.dart';
+import 'package:bom_pastor_app/models/student_model.dart';
 
 Student fromSheet(int index, List<dynamic> sheetRow) {
   final name = sheetRow[0] as String? ?? "";

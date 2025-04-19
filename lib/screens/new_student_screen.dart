@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/config/app_colors.dart';
-import 'package:myapp/config/sheet_config.dart';
-import 'package:myapp/third_party/google_sheet.dart';
+
+import 'package:bom_pastor_app/config/app_colors.dart';
+import 'package:bom_pastor_app/config/sheet_config.dart';
+import 'package:bom_pastor_app/third_party/google_sheet.dart';
 
 class NewStudentScreen extends StatefulWidget {
   const NewStudentScreen({super.key});

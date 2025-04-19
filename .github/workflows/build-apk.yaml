@@ -1,0 +1,35 @@
+name: Build Android Flutter APK
+
+on:
+  pull_request:
+    branches: ['main']
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.18.0'
+
+      - name: Decode GOOGLE_SHEETS_CREDENTIALS and write to file
+        run: |
+          echo "${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}" > ./lib/assets/credentials.json
+
+      - name: Generate env.dart with SPREED_SHEET_ID
+        run: |
+          sed -i "s|GOOGLE_SHEET_PLACEHOLDER|${{ secrets.SPREED_SHEET_ID }}|g" lib/config/sheet_config.dart
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+

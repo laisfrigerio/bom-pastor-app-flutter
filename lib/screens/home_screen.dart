@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import 'package:myapp/adapters/student_adapter.dart';
-import 'package:myapp/components/list_students.dart';
-import 'package:myapp/config/app_colors.dart';
-import 'package:myapp/config/sheet_config.dart';
-import 'package:myapp/models/student_model.dart';
-import 'package:myapp/screens/edit_student_screen.dart';
-import 'package:myapp/screens/new_student_screen.dart';
-import 'package:myapp/third_party/google_sheet.dart';
+import 'package:bom_pastor_app/adapters/student_adapter.dart';
+import 'package:bom_pastor_app/components/list_students.dart';
+import 'package:bom_pastor_app/config/app_colors.dart';
+import 'package:bom_pastor_app/config/sheet_config.dart';
+import 'package:bom_pastor_app/models/student_model.dart';
+import 'package:bom_pastor_app/screens/edit_student_screen.dart';
+import 'package:bom_pastor_app/screens/new_student_screen.dart';
+import 'package:bom_pastor_app/third_party/google_sheet.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
