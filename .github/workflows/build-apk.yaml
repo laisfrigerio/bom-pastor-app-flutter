@@ -23,6 +23,7 @@ jobs:
 
       - name: Decode GOOGLE_SHEETS_CREDENTIALS and write to file
         run: |
+          mkdir -p ./lib/assets
           echo "${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}" > ./lib/assets/credentials.json
 
       - name: Generate env.dart with SPREED_SHEET_ID
