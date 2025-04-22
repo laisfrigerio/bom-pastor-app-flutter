@@ -1,5 +1,5 @@
+import 'package:bom_pastor_app/screens/classrooms/list_classroom_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:bom_pastor_app/screens/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Bom Pastor',
-      home: const MyHomePage(title: 'Instituto Bom Pastor'),
+      home: const ListClassRoomScreen(title: 'Instituto Bom Pastor'),
       debugShowCheckedModeBanner: false,
     );
   }

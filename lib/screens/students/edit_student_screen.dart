@@ -10,8 +10,10 @@ class EditStudentScreen extends StatefulWidget {
     required this.studentName,
     required this.studentScore,
     required this.rowNumber,
+    required this.spreadSheetName,
   });
 
+  final String spreadSheetName;
   final String studentName;
   final int studentScore;
   final int rowNumber;
@@ -22,14 +24,12 @@ class EditStudentScreen extends StatefulWidget {
 
 class _EditStudentScreenState extends State<EditStudentScreen> {
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _scoreController = TextEditingController();
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _nameController.text = widget.studentName;
-    _scoreController.text = widget.studentScore.toString();
   }
 
   @override
@@ -53,20 +53,11 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
               const SizedBox(height: 20),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(hintText: 'Nome do Aluno'),
-                enabled: !_isLoading,
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _scoreController,
                 decoration: const InputDecoration(
-                  hintText: 'Pontuação do Aluno',
+                  hintText: 'Nome do Aluno',
+                  labelText: 'Nome',
                 ),
                 enabled: !_isLoading,
-                keyboardType: TextInputType.number,
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.allow(RegExp(r'^-?\d*$')),
-                ],
               ),
               const SizedBox(height: 50),
               Column(
@@ -90,17 +81,14 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                         _isLoading
                             ? null
                             : () {
-                              if (_nameController.text.isNotEmpty &&
-                                  _scoreController.text.isNotEmpty) {
+                              if (_nameController.text.isNotEmpty) {
                                 _updateStudent(
-                                  _nameController.text,
-                                  int.tryParse(_scoreController.text) ??
-                                      widget
-                                          .studentScore, // Handle potential parsing error
+                                  _nameController
+                                      .text, // Handle potential parsing error
                                 );
                               } else {
                                 _showSnackBarMessage(
-                                  message: 'Nome e pontuação são obrigatórios.',
+                                  message: 'Nome é obrigatório',
                                   backgroundColor: Colors.red,
                                 );
                               }
@@ -127,17 +115,17 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     );
   }
 
-  Future<void> _updateStudent(String newName, int newScore) async {
+  Future<void> _updateStudent(String newName) async {
     setState(() {
       _isLoading = true;
     });
 
     try {
       await updateGoogleSheetRow(
-        [newName, newScore],
+        [newName, widget.studentScore],
         widget.rowNumber,
         SheetConfig.spreadSheetId,
-        SheetConfig.sheetListStudentsName,
+        widget.spreadSheetName,
       );
 
       if (mounted) {

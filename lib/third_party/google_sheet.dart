@@ -1,3 +1,4 @@
+import 'package:bom_pastor_app/config/sheet_config.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:googleapis/sheets/v4.dart' as sheets;
 
@@ -99,6 +100,57 @@ Future<void> updateGoogleSheetRow(
       throw Exception("Failed to update row $rowNumber in sheet.");
     }
   } catch (e) {
+    rethrow;
+  }
+}
+
+Future<void> deleteGoogleSheetRow(
+  int rowNumber,
+  String sheetId,
+  String sheetName,
+) async {
+  try {
+    final sheetsApi = await _getGoogleSheetClient();
+
+    // Get the spreadsheet metadata to find the sheet ID.
+    final spreadsheet = await sheetsApi.spreadsheets.get(
+      SheetConfig.spreadSheetId,
+    );
+
+    print("sheets ${spreadsheet.sheets}");
+    print("rowNumber ${rowNumber}");
+
+    final sheet = spreadsheet.sheets?.firstWhere(
+      (s) => s.properties?.title == sheetName,
+    );
+    final sheetId = sheet?.properties?.sheetId;
+
+    if (sheetId == null) {
+      throw Exception("Sheet '$sheetName' not found in spreadsheet.");
+    }
+
+    final deleteRange = sheets.DimensionRange(
+      dimension: "ROWS",
+      sheetId: sheetId,
+      startIndex: rowNumber,
+      endIndex: rowNumber + 1,
+    );
+
+    // Create a DeleteDimensionRequest to delete rows.
+    final request = sheets.DeleteDimensionRequest(range: deleteRange);
+
+    // Build the request body with the DeleteDimensionRequest.
+    final batchUpdateSpreadsheetRequest = sheets.BatchUpdateSpreadsheetRequest(
+      requests: [sheets.Request(deleteDimension: request)],
+    );
+
+    // Execute the request.
+    await sheetsApi.spreadsheets.batchUpdate(
+      batchUpdateSpreadsheetRequest,
+      SheetConfig.spreadSheetId,
+    );
+  } catch (e) {
+    print("Failed to delete row $rowNumber from sheet: $e");
     rethrow;
   }
 }
