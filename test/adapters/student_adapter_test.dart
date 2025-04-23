@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bom_pastor_app/adapters/student_adapter.dart';
-import 'package:bom_pastor_app/models/student_model.dart';
 
 void main() {
   group('fromSheet', () {
@@ -33,25 +32,28 @@ void main() {
   });
 
   group('listFromSheet', () {
-    test('should correctly map a list of sheet rows to a list of Student objects', () {
-      final sheetData = [
-        ['Name', 'Score'], // Header row
-        ['John Doe', '100'],
-        ['Jane Doe', '200'],
-      ];
+    test(
+      'should correctly map a list of sheet rows to a list of Student objects',
+      () {
+        final sheetData = [
+          ['Name', 'Score'], // Header row
+          ['John Doe', '100'],
+          ['Jane Doe', '200'],
+        ];
 
-      final students = listFromSheet(sheetData);
+        final students = listFromSheet(sheetData);
 
-      expect(students.length, 2);
+        expect(students.length, 2);
 
-      expect(students[0].rowId, 1);
-      expect(students[0].name, 'John Doe');
-      expect(students[0].score, 100);
+        expect(students[0].rowId, 1);
+        expect(students[0].name, 'John Doe');
+        expect(students[0].score, 100);
 
-      expect(students[1].rowId, 2);
-      expect(students[1].name, 'Jane Doe');
-      expect(students[1].score, 200);
-    });
+        expect(students[1].rowId, 2);
+        expect(students[1].name, 'Jane Doe');
+        expect(students[1].score, 200);
+      },
+    );
 
     test('should skip rows with insufficient columns', () {
       final sheetData = [
