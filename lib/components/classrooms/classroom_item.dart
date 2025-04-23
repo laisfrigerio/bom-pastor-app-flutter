@@ -24,6 +24,7 @@ class ClassRoomItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(20.0),
         ),
         child: InkWell(
+          key: const Key('classroom_item_tap'),
           onTap: () {
             onListStudents(classroom.name, classroom.spreadSheetName);
           },
