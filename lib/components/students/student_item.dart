@@ -28,6 +28,7 @@ class StudentItem extends StatelessWidget {
           ), // Define o raio do arredondamento (ajuste conforme necessário)
         ),
         child: InkWell(
+          key: const Key('student_item_tap'),
           onTap: () {
             onEditStudentScore(student);
           },
