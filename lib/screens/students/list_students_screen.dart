@@ -25,6 +25,8 @@ class ListStudentsScreen extends StatefulWidget {
 }
 
 class _ListStudentsScreenState extends State<ListStudentsScreen> {
+  final GoogleSheetApi googleSheetApi = GoogleSheetApi();
+
   List<Student> _students = [];
   bool _isLoading = true;
 
@@ -41,10 +43,11 @@ class _ListStudentsScreenState extends State<ListStudentsScreen> {
     });
 
     try {
-      List<List<dynamic>> fetchedRows = await readGoogleSheetData(
-        SheetConfig.spreadSheetId,
-        widget.spreadSheetName,
-      );
+      List<List<dynamic>> fetchedRows = await googleSheetApi
+          .readGoogleSheetData(
+            SheetConfig.spreadSheetId,
+            widget.spreadSheetName,
+          );
 
       List<Student> fetchedStudents = listFromSheet(fetchedRows);
 
@@ -125,7 +128,7 @@ class _ListStudentsScreenState extends State<ListStudentsScreen> {
     });
 
     try {
-      await deleteGoogleSheetRow(
+      await googleSheetApi.deleteGoogleSheetRow(
         student.rowId,
         SheetConfig.spreadSheetId,
         widget.spreadSheetName,

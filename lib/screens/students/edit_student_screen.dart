@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Import for numeric input
 import 'package:bom_pastor_app/config/app_colors.dart';
 import 'package:bom_pastor_app/config/sheet_config.dart';
 import 'package:bom_pastor_app/third_party/google_sheet.dart';
@@ -23,7 +22,10 @@ class EditStudentScreen extends StatefulWidget {
 }
 
 class _EditStudentScreenState extends State<EditStudentScreen> {
+  final GoogleSheetApi _googleSheetApi = GoogleSheetApi();
+
   final TextEditingController _nameController = TextEditingController();
+
   bool _isLoading = false;
 
   @override
@@ -121,7 +123,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     });
 
     try {
-      await updateGoogleSheetRow(
+      await _googleSheetApi.updateGoogleSheetRow(
         [newName, widget.studentScore],
         widget.rowNumber,
         SheetConfig.spreadSheetId,

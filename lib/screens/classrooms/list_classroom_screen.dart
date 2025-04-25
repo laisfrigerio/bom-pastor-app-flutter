@@ -18,6 +18,8 @@ class ListClassRoomScreen extends StatefulWidget {
 }
 
 class _ListClassRoomScreenState extends State<ListClassRoomScreen> {
+  final GoogleSheetApi googleSheetApi = GoogleSheetApi();
+
   List<ClassRoom> _classrooms = [];
   bool _isLoading = true;
 
@@ -38,10 +40,11 @@ class _ListClassRoomScreenState extends State<ListClassRoomScreen> {
     });
 
     try {
-      List<List<dynamic>> fetchedRows = await readGoogleSheetData(
-        SheetConfig.spreadSheetId,
-        SheetConfig.sheetListClassRoomsName,
-      );
+      List<List<dynamic>> fetchedRows = await googleSheetApi
+          .readGoogleSheetData(
+            SheetConfig.spreadSheetId,
+            SheetConfig.sheetListClassRoomsName,
+          );
 
       List<ClassRoom> fetchedClassRooms = listFromSheet(fetchedRows);
 

@@ -14,7 +14,10 @@ class NewStudentScreen extends StatefulWidget {
 }
 
 class _NewStudentScreenState extends State<NewStudentScreen> {
+  final GoogleSheetApi googleSheetApi = GoogleSheetApi();
+
   final TextEditingController _nameController = TextEditingController();
+
   bool _isLoading = false;
 
   @override
@@ -103,7 +106,7 @@ class _NewStudentScreenState extends State<NewStudentScreen> {
     });
 
     try {
-      await addGoogleSheetData(
+      await googleSheetApi.addGoogleSheetData(
         [studentName, 0],
         SheetConfig.spreadSheetId,
         widget.spreadSheetName,

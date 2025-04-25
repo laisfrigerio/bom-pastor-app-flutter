@@ -6,22 +6,35 @@ import 'package:bom_pastor_app/config/sheet_config.dart';
 import 'package:bom_pastor_app/third_party/google_sheet.dart';
 
 class EditClassRoomScreen extends StatefulWidget {
-  const EditClassRoomScreen({super.key, required this.classRoom});
+  const EditClassRoomScreen({
+    super.key,
+    required this.classRoom,
+    this.googleSheetApi,
+  });
 
   final ClassRoom classRoom;
+  final IGoogleSheetApi? googleSheetApi;
 
   @override
   State<EditClassRoomScreen> createState() => _EditClassRoomScreenState();
 }
 
 class _EditClassRoomScreenState extends State<EditClassRoomScreen> {
+  late IGoogleSheetApi _googleSheetApi;
+
   final TextEditingController _nameController = TextEditingController();
   bool _isLoading = false;
+
+  @visibleForTesting
+  set googleSheetApi(IGoogleSheetApi value) {
+    _googleSheetApi = value;
+  }
 
   @override
   void initState() {
     super.initState();
     _nameController.text = widget.classRoom.name;
+    _googleSheetApi = widget.googleSheetApi ?? GoogleSheetApi();
   }
 
   @override
@@ -109,7 +122,7 @@ class _EditClassRoomScreenState extends State<EditClassRoomScreen> {
       );
     } else {
       _showSnackBarMessage(
-        message: 'Nome e código da turma não podem estar vazios.',
+        message: 'Nome da turma não pode estar vazio.',
         backgroundColor: Colors.red,
       );
     }
@@ -126,7 +139,7 @@ class _EditClassRoomScreenState extends State<EditClassRoomScreen> {
     });
 
     try {
-      await updateGoogleSheetRow(
+      await _googleSheetApi.updateGoogleSheetRow(
         [newCode, newName, widget.classRoom.spreadSheetName],
         widget.classRoom.rowId + 1,
         SheetConfig.spreadSheetId,

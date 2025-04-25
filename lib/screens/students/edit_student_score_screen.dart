@@ -20,9 +20,12 @@ class EditStudentScoreScreen extends StatefulWidget {
 }
 
 class _EditStudentScoreScreenState extends State<EditStudentScoreScreen> {
+  final GoogleSheetApi googleSheetApi = GoogleSheetApi();
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _currentScoreController = TextEditingController();
   final TextEditingController _scoreController = TextEditingController();
+
   bool _isLoading = false;
 
   @override
@@ -38,7 +41,7 @@ class _EditStudentScoreScreenState extends State<EditStudentScoreScreen> {
     });
 
     try {
-      await updateGoogleSheetRow(
+      await googleSheetApi.updateGoogleSheetRow(
         [newName, newScore],
         widget.student.rowId + 1,
         SheetConfig.spreadSheetId,
