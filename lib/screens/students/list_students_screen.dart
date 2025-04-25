@@ -15,24 +15,32 @@ class ListStudentsScreen extends StatefulWidget {
     super.key,
     required this.title,
     required this.spreadSheetName,
+    this.googleSheetApi,
   });
 
   final String title;
   final String spreadSheetName;
+  final IGoogleSheetApi? googleSheetApi;
 
   @override
   State<ListStudentsScreen> createState() => _ListStudentsScreenState();
 }
 
 class _ListStudentsScreenState extends State<ListStudentsScreen> {
-  final GoogleSheetApi googleSheetApi = GoogleSheetApi();
+  late IGoogleSheetApi _googleSheetApi;
 
   List<Student> _students = [];
   bool _isLoading = true;
 
+  @visibleForTesting
+  set googleSheetApi(IGoogleSheetApi value) {
+    _googleSheetApi = value;
+  }
+
   @override
   void initState() {
     super.initState();
+    _googleSheetApi = widget.googleSheetApi ?? GoogleSheetApi();
     _getStudentsData();
   }
 
@@ -43,7 +51,7 @@ class _ListStudentsScreenState extends State<ListStudentsScreen> {
     });
 
     try {
-      List<List<dynamic>> fetchedRows = await googleSheetApi
+      List<List<dynamic>> fetchedRows = await _googleSheetApi
           .readGoogleSheetData(
             SheetConfig.spreadSheetId,
             widget.spreadSheetName,
@@ -128,7 +136,7 @@ class _ListStudentsScreenState extends State<ListStudentsScreen> {
     });
 
     try {
-      await googleSheetApi.deleteGoogleSheetRow(
+      await _googleSheetApi.deleteGoogleSheetRow(
         student.rowId,
         SheetConfig.spreadSheetId,
         widget.spreadSheetName,

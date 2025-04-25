@@ -9,23 +9,34 @@ import 'package:bom_pastor_app/third_party/google_sheet.dart';
 import 'package:flutter/material.dart';
 
 class ListClassRoomScreen extends StatefulWidget {
-  const ListClassRoomScreen({super.key, required this.title});
+  const ListClassRoomScreen({
+    super.key,
+    required this.title,
+    this.googleSheetApi,
+  });
 
   final String title;
+  final IGoogleSheetApi? googleSheetApi;
 
   @override
   State<ListClassRoomScreen> createState() => _ListClassRoomScreenState();
 }
 
 class _ListClassRoomScreenState extends State<ListClassRoomScreen> {
-  final GoogleSheetApi googleSheetApi = GoogleSheetApi();
+  late IGoogleSheetApi _googleSheetApi;
 
   List<ClassRoom> _classrooms = [];
   bool _isLoading = true;
 
+  @visibleForTesting
+  set googleSheetApi(IGoogleSheetApi value) {
+    _googleSheetApi = value;
+  }
+
   @override
   void initState() {
     super.initState();
+    _googleSheetApi = widget.googleSheetApi ?? GoogleSheetApi();
     _getClassRoomsData();
   }
 
@@ -40,7 +51,7 @@ class _ListClassRoomScreenState extends State<ListClassRoomScreen> {
     });
 
     try {
-      List<List<dynamic>> fetchedRows = await googleSheetApi
+      List<List<dynamic>> fetchedRows = await _googleSheetApi
           .readGoogleSheetData(
             SheetConfig.spreadSheetId,
             SheetConfig.sheetListClassRoomsName,
@@ -65,9 +76,11 @@ class _ListClassRoomScreenState extends State<ListClassRoomScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(backgroundColor: Colors.red, content: Text(e.toString())),
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(backgroundColor: Colors.red, content: Text(e.toString())),
+          );
+        });
       }
     }
   }
