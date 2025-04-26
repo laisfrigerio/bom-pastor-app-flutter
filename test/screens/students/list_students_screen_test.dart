@@ -1,3 +1,4 @@
+import 'package:bom_pastor_app/screens/students/score_student_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -16,6 +17,7 @@ class FakeRoute extends Fake implements Route<dynamic> {}
 void main() {
   late MockGoogleSheetApi mockGoogleSheetApi;
   final mockObserver = MockNavigatorObserver();
+  final String spreadSheetName = 'sheetName1';
 
   setUp(() {
     mockGoogleSheetApi = MockGoogleSheetApi();
@@ -25,7 +27,7 @@ void main() {
     registerFallbackValue(FakeRoute());
   });
 
-  group('ListClassRoomScreen', () {
+  group('ListStudentScreen', () {
     testWidgets('should show a loading indicator while fetching data', (
       WidgetTester tester,
     ) async {
@@ -36,8 +38,9 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: ListClassRoomScreen(
-            title: 'Classrooms',
+          home: ListStudentsScreen(
+            title: 'Lista de Alunos',
+            spreadSheetName: spreadSheetName,
             googleSheetApi: mockGoogleSheetApi,
           ),
         ),
@@ -47,29 +50,32 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('should show an empty message when no classrooms are found', (
+    testWidgets('should show an empty message when no students are found', (
       WidgetTester tester,
     ) async {
       // Arrange
       when(
         () => mockGoogleSheetApi.readGoogleSheetData(any(), any()),
       ).thenAnswer((_) async => []);
+
       // Act
       await tester.pumpWidget(
         MaterialApp(
-          home: ListClassRoomScreen(
-            title: 'Classrooms',
+          home: ListStudentsScreen(
+            title: 'Lista de Alunos',
+            spreadSheetName: spreadSheetName,
             googleSheetApi: mockGoogleSheetApi,
           ),
         ),
       );
+
       await tester.pumpAndSettle();
 
       // Assert
-      expect(find.text('Nenhuma turma encontrada'), findsOneWidget);
+      expect(find.text('Nenhum aluno encontrado'), findsOneWidget);
     });
 
-    testWidgets('should render a list of classrooms when data is available', (
+    testWidgets('should render a list of students when data is available', (
       WidgetTester tester,
     ) async {
       // Arrange
@@ -77,17 +83,19 @@ void main() {
         () => mockGoogleSheetApi.readGoogleSheetData(any(), any()),
       ).thenAnswer(
         (_) async => [
-          ['Code', 'Name', 'Spread Sheet Name'],
-          ['C001', 'Math Class', 'Sheet1'],
-          ['C002', 'Science Class', 'Sheet2'],
+          ['Name', 'Score'],
+          ['Maria', '0'],
+          ['Ana', '10'],
+          ['José', '3'],
         ],
       );
 
       // Act
       await tester.pumpWidget(
         MaterialApp(
-          home: ListClassRoomScreen(
-            title: 'Classrooms',
+          home: ListStudentsScreen(
+            title: 'Lista de Alunos',
+            spreadSheetName: spreadSheetName,
             googleSheetApi: mockGoogleSheetApi,
           ),
         ),
@@ -95,29 +103,32 @@ void main() {
       await tester.pumpAndSettle();
 
       // Assert
-      expect(find.text('Math Class'), findsOneWidget);
-      expect(find.text('Science Class'), findsOneWidget);
-      expect(find.byType(ListTile), findsNWidgets(2));
+      expect(find.text('Ana'), findsOneWidget);
+      expect(find.text('Maria'), findsOneWidget);
+      expect(find.text('José'), findsOneWidget);
+      expect(find.byType(ListTile), findsNWidgets(3));
     });
 
-    testWidgets('should navigate to ListStudentsScreen on classroom tap', (
+    testWidgets('should navigate to EditStudentScoreScreen on student tap', (
       WidgetTester tester,
     ) async {
       when(
         () => mockGoogleSheetApi.readGoogleSheetData(any(), any()),
       ).thenAnswer(
         (_) async => [
-          ['Code', 'Name', 'Spread Sheet Name'],
-          ['C001', 'Math Class', 'Sheet1'],
-          ['C002', 'Science Class', 'Sheet2'],
+          ['Name', 'Score'],
+          ['Maria', '0'],
+          ['Ana', '10'],
+          ['José', '3'],
         ],
       );
 
       // Act
       await tester.pumpWidget(
         MaterialApp(
-          home: ListClassRoomScreen(
-            title: 'Classrooms',
+          home: ListStudentsScreen(
+            title: 'Lista de Alunos',
+            spreadSheetName: spreadSheetName,
             googleSheetApi: mockGoogleSheetApi,
           ),
           navigatorObservers: [mockObserver],
@@ -125,11 +136,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Math Class'));
+      await tester.tap(find.text('Ana'));
       await tester.pumpAndSettle();
 
       // Assert
-      expect(find.byType(ListStudentsScreen), findsOneWidget);
+      expect(find.byType(EditStudentScoreScreen), findsOneWidget);
     });
 
     testWidgets('should navigate to EditClassRoomScreen on edit button tap', (

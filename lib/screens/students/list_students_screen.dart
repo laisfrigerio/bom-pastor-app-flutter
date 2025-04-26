@@ -44,6 +44,57 @@ class _ListStudentsScreenState extends State<ListStudentsScreen> {
     _getStudentsData();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: Colors.white,
+        title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              _getStudentsData();
+            },
+          ),
+        ],
+      ),
+      body: _renderStudentsList(),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: Colors.white,
+        onPressed: () {
+          _navigateToAddStudent(widget.spreadSheetName);
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _renderStudentsList() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_students.isEmpty) {
+      return const Center(child: Text('Nenhum aluno encontrado'));
+    }
+
+    return Column(
+      children: [
+        Expanded(
+          child: ListStudents(
+            students: _students,
+            onDeleteStudent: _onDeleteStudent,
+            onEditStudent: _navigateToEditStudent,
+            onEditStudentScore: _navigateToEditStudentScore,
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _getStudentsData() async {
     setState(() {
       _isLoading = true;
@@ -115,18 +166,24 @@ class _ListStudentsScreenState extends State<ListStudentsScreen> {
   }
 
   Future<void> _navigateToEditStudentScore(Student student) async {
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (context) => EditStudentScoreScreen(
-              student: student,
-              spreadSheetName: widget.spreadSheetName,
-            ),
-      ),
-    );
+    print("_navigateToEditStudentScore");
+    try {
+      final result = await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder:
+              (context) => EditStudentScoreScreen(
+                student: student,
+                spreadSheetName: widget.spreadSheetName,
+              ),
+        ),
+      );
 
-    if (result == true) {
-      _getStudentsData();
+      if (result == true) {
+        _getStudentsData();
+      }
+    } catch (e) {
+      print("erro ao mudar de tela");
+      print(e);
     }
   }
 
@@ -165,47 +222,5 @@ class _ListStudentsScreenState extends State<ListStudentsScreen> {
         SnackBar(backgroundColor: backgroundColor, content: Text(message)),
       );
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
-        foregroundColor: Colors.white,
-        title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              _getStudentsData();
-            },
-          ),
-        ],
-      ),
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-                children: [
-                  Expanded(
-                    child: ListStudents(
-                      students: _students,
-                      onDeleteStudent: _onDeleteStudent,
-                      onEditStudent: _navigateToEditStudent,
-                      onEditStudentScore: _navigateToEditStudentScore,
-                    ),
-                  ),
-                ],
-              ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primaryColor,
-        foregroundColor: Colors.white,
-        onPressed: () {
-          _navigateToAddStudent(widget.spreadSheetName);
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
   }
 }
