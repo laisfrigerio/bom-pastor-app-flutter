@@ -5,20 +5,36 @@ import 'package:bom_pastor_app/config/sheet_config.dart';
 import 'package:bom_pastor_app/third_party/google_sheet.dart';
 
 class NewStudentScreen extends StatefulWidget {
-  const NewStudentScreen({super.key, required this.spreadSheetName});
+  const NewStudentScreen({
+    super.key,
+    required this.spreadSheetName,
+    this.googleSheetApi,
+  });
 
   final String spreadSheetName;
+  final IGoogleSheetApi? googleSheetApi;
 
   @override
   State<NewStudentScreen> createState() => _NewStudentScreenState();
 }
 
 class _NewStudentScreenState extends State<NewStudentScreen> {
-  final GoogleSheetApi googleSheetApi = GoogleSheetApi();
+  late IGoogleSheetApi _googleSheetApi;
 
   final TextEditingController _nameController = TextEditingController();
 
   bool _isLoading = false;
+
+  @visibleForTesting
+  set googleSheetApi(IGoogleSheetApi value) {
+    _googleSheetApi = value;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _googleSheetApi = widget.googleSheetApi ?? GoogleSheetApi();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +43,11 @@ class _NewStudentScreenState extends State<NewStudentScreen> {
         backgroundColor: AppColors.primaryColor,
         foregroundColor: Colors.white,
         title: const Text('Adicionar Novo Aluno'),
+        leading: IconButton(
+          key: const Key('back_button'),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -64,20 +85,7 @@ class _NewStudentScreenState extends State<NewStudentScreen> {
                   MaterialButton(
                     color: AppColors.primaryColor,
                     textColor: Colors.white,
-                    onPressed:
-                        _isLoading
-                            ? null
-                            : () {
-                              if (_nameController.text.isNotEmpty) {
-                                _addStudent(_nameController.text);
-                              } else {
-                                _showSnackBarMessage(
-                                  message:
-                                      'O nome do aluno não pode ser vazio.',
-                                  backgroundColor: Colors.red,
-                                );
-                              }
-                            },
+                    onPressed: _handleSaveButtonClick,
                     child:
                         _isLoading
                             ? const SizedBox(
@@ -106,7 +114,7 @@ class _NewStudentScreenState extends State<NewStudentScreen> {
     });
 
     try {
-      await googleSheetApi.addGoogleSheetData(
+      await _googleSheetApi.addGoogleSheetData(
         [studentName, 0],
         SheetConfig.spreadSheetId,
         widget.spreadSheetName,
@@ -129,14 +137,32 @@ class _NewStudentScreenState extends State<NewStudentScreen> {
     }
   }
 
+  void _handleSaveButtonClick() {
+    if (_isLoading) {
+      return;
+    }
+
+    if (_nameController.text.isNotEmpty) {
+      _addStudent(_nameController.text);
+      return;
+    }
+
+    _showSnackBarMessage(
+      message: 'Campo nome é obrigatório',
+      backgroundColor: Colors.red,
+    );
+  }
+
   void _showSnackBarMessage({
     required String message,
     Color backgroundColor = AppColors.grey700,
   }) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(backgroundColor: backgroundColor, content: Text(message)),
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(backgroundColor: backgroundColor, content: Text(message)),
+        );
+      });
     }
   }
 }

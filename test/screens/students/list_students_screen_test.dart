@@ -1,3 +1,4 @@
+import 'package:bom_pastor_app/screens/students/edit_student_score_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -191,6 +192,42 @@ void main() {
       // Assert
       expect(find.byType(NewStudentScreen), findsOneWidget);
     });
+
+    testWidgets(
+      'should navigate to EditStudentScoreScreen on tap student name',
+      (WidgetTester tester) async {
+        // Arrange
+        when(
+          () => mockGoogleSheetApi.readGoogleSheetData(any(), any()),
+        ).thenAnswer(
+          (_) async => [
+            ['Name', 'Score'],
+            ['Ana', '10'],
+            ['Maria', '1'],
+            ['Pedro', '-10'],
+          ],
+        );
+
+        // Act
+        await tester.pumpWidget(
+          MaterialApp(
+            home: ListStudentsScreen(
+              title: 'Lista de Alusnos',
+              spreadSheetName: spreadSheetName,
+              googleSheetApi: mockGoogleSheetApi,
+            ),
+            navigatorObservers: [mockObserver],
+          ),
+        );
+
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Ana'));
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(find.byType(EditStudentScoreScreen), findsOneWidget);
+      },
+    );
 
     testWidgets(
       'should call deleteGoogleSheetRow when "Remove" button clicked',
