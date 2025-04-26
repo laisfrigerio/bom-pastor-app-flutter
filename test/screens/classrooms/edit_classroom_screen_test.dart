@@ -1,9 +1,10 @@
-import 'package:bom_pastor_app/third_party/google_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+import 'package:bom_pastor_app/third_party/google_sheet.dart';
 import 'package:bom_pastor_app/screens/classrooms/edit_classroom_screen.dart';
 import 'package:bom_pastor_app/models/classroom_model.dart';
-import 'package:mocktail/mocktail.dart';
 
 class MockGoogleSheetApi extends Mock implements IGoogleSheetApi {}
 
@@ -71,8 +72,6 @@ void main() {
       // Act
       await tester.enterText(find.byType(TextField), 'Updated Class Name');
       await tester.tap(find.text('Salvar'));
-
-      // Primeiro pump para iniciar a animação e reconstrução
       await tester.pump();
 
       // Assert
