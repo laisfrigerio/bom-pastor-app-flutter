@@ -1,19 +1,46 @@
 import 'package:flutter/material.dart';
-
 import 'package:bom_pastor_app/config/app_colors.dart';
 import 'package:bom_pastor_app/config/sheet_config.dart';
 import 'package:bom_pastor_app/third_party/google_sheet.dart';
 
-class NewStudentScreen extends StatefulWidget {
-  const NewStudentScreen({super.key});
+class EditStudentScreen extends StatefulWidget {
+  const EditStudentScreen({
+    super.key,
+    required this.studentName,
+    required this.studentScore,
+    required this.rowNumber,
+    required this.spreadSheetName,
+    this.googleSheetApi,
+  });
+
+  final String spreadSheetName;
+  final String studentName;
+  final int studentScore;
+  final int rowNumber;
+  final IGoogleSheetApi? googleSheetApi;
 
   @override
-  State<NewStudentScreen> createState() => _NewStudentScreenState();
+  State<EditStudentScreen> createState() => _EditStudentScreenState();
 }
 
-class _NewStudentScreenState extends State<NewStudentScreen> {
+class _EditStudentScreenState extends State<EditStudentScreen> {
+  late IGoogleSheetApi _googleSheetApi;
+
   final TextEditingController _nameController = TextEditingController();
+
   bool _isLoading = false;
+
+  @visibleForTesting
+  set googleSheetApi(IGoogleSheetApi value) {
+    _googleSheetApi = value;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = widget.studentName;
+    _googleSheetApi = widget.googleSheetApi ?? GoogleSheetApi();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +48,12 @@ class _NewStudentScreenState extends State<NewStudentScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryColor,
         foregroundColor: Colors.white,
-        title: const Text('Adicionar Novo Aluno'),
+        title: const Text('Editar Aluno'),
+        leading: IconButton(
+          key: const Key('back_button'),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -29,17 +61,20 @@ class _NewStudentScreenState extends State<NewStudentScreen> {
           child: Column(
             children: <Widget>[
               const Icon(
-                Icons.person_add,
+                Icons.person,
                 size: 100,
                 color: AppColors.primaryColor,
               ),
+              const SizedBox(height: 20),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(hintText: 'Nome do Aluno'),
+                decoration: const InputDecoration(
+                  hintText: 'Nome do Aluno',
+                  labelText: 'Nome',
+                ),
                 enabled: !_isLoading,
               ),
               const SizedBox(height: 50),
-              // const Spacer(),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -48,14 +83,12 @@ class _NewStudentScreenState extends State<NewStudentScreen> {
                     color: AppColors.grey100,
                     textColor: AppColors.grey700,
                     onPressed:
-                        _isLoading
-                            ? null
-                            : () {
-                              Navigator.of(context).pop();
-                            },
+                        _isLoading ? null : () => Navigator.of(context).pop(),
                     child: const Text('Cancelar'),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(
+                    height: 10,
+                  ), // Use SizedBox for consistent spacing
                   MaterialButton(
                     color: AppColors.primaryColor,
                     textColor: Colors.white,
@@ -64,11 +97,13 @@ class _NewStudentScreenState extends State<NewStudentScreen> {
                             ? null
                             : () {
                               if (_nameController.text.isNotEmpty) {
-                                _addStudent(_nameController.text);
+                                _updateStudent(
+                                  _nameController
+                                      .text, // Handle potential parsing error
+                                );
                               } else {
                                 _showSnackBarMessage(
-                                  message:
-                                      'O nome do aluno não pode ser vazio.',
+                                  message: 'Campo Nome é obrigatório',
                                   backgroundColor: Colors.red,
                                 );
                               }
@@ -95,24 +130,25 @@ class _NewStudentScreenState extends State<NewStudentScreen> {
     );
   }
 
-  Future<void> _addStudent(String studentName) async {
+  Future<void> _updateStudent(String newName) async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      await addGoogleSheetData(
-        [studentName, 0],
+      await _googleSheetApi.updateGoogleSheetRow(
+        [newName, widget.studentScore],
+        widget.rowNumber,
         SheetConfig.spreadSheetId,
-        SheetConfig.sheetListStudentsName,
+        widget.spreadSheetName,
       );
 
       if (mounted) {
-        Navigator.of(context).pop(true);
+        Navigator.of(context).pop(true); // Indicate success
       }
     } catch (e) {
       _showSnackBarMessage(
-        message: 'Erro ao adicionar aluno: $e',
+        message: 'Erro ao atualizar aluno: $e',
         backgroundColor: Colors.red,
       );
     } finally {

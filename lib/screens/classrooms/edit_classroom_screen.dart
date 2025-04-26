@@ -1,35 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Import for numeric input
+import 'package:flutter/services.dart';
+
 import 'package:bom_pastor_app/config/app_colors.dart';
 import 'package:bom_pastor_app/config/sheet_config.dart';
+import 'package:bom_pastor_app/models/classroom_model.dart';
 import 'package:bom_pastor_app/third_party/google_sheet.dart';
 
-class EditStudentScreen extends StatefulWidget {
-  const EditStudentScreen({
+class EditClassRoomScreen extends StatefulWidget {
+  const EditClassRoomScreen({
     super.key,
-    required this.studentName,
-    required this.studentScore,
-    required this.rowNumber,
+    required this.classRoom,
+    this.googleSheetApi,
   });
 
-  final String studentName;
-  final int studentScore;
-  final int rowNumber;
+  final ClassRoom classRoom;
+  final IGoogleSheetApi? googleSheetApi;
 
   @override
-  State<EditStudentScreen> createState() => _EditStudentScreenState();
+  State<EditClassRoomScreen> createState() => _EditClassRoomScreenState();
 }
 
-class _EditStudentScreenState extends State<EditStudentScreen> {
+class _EditClassRoomScreenState extends State<EditClassRoomScreen> {
+  late IGoogleSheetApi _googleSheetApi;
+
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _scoreController = TextEditingController();
   bool _isLoading = false;
+
+  @visibleForTesting
+  set googleSheetApi(IGoogleSheetApi value) {
+    _googleSheetApi = value;
+  }
 
   @override
   void initState() {
     super.initState();
-    _nameController.text = widget.studentName;
-    _scoreController.text = widget.studentScore.toString();
+    _nameController.text = widget.classRoom.name;
+    _googleSheetApi = widget.googleSheetApi ?? GoogleSheetApi();
   }
 
   @override
@@ -38,7 +44,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryColor,
         foregroundColor: Colors.white,
-        title: const Text('Editar Aluno'),
+        title: const Text('Editar Turma'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -46,29 +52,23 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
           child: Column(
             children: <Widget>[
               const Icon(
-                Icons.person,
+                Icons.school,
                 size: 100,
                 color: AppColors.primaryColor,
               ),
+
               const SizedBox(height: 20),
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(hintText: 'Nome do Aluno'),
-                enabled: !_isLoading,
+
+              _renderTextField(
+                fieldController: _nameController,
+                fieldType: TextInputType.text,
+                hintText: 'Nome da Turma',
+                labelText: 'Nome',
+                fieldRegex: r'^[a-zA-Z0-9\- ]+$',
               ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _scoreController,
-                decoration: const InputDecoration(
-                  hintText: 'Pontuação do Aluno',
-                ),
-                enabled: !_isLoading,
-                keyboardType: TextInputType.number,
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.allow(RegExp(r'^-?\d*$')),
-                ],
-              ),
+
               const SizedBox(height: 50),
+
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -86,25 +86,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                   MaterialButton(
                     color: AppColors.primaryColor,
                     textColor: Colors.white,
-                    onPressed:
-                        _isLoading
-                            ? null
-                            : () {
-                              if (_nameController.text.isNotEmpty &&
-                                  _scoreController.text.isNotEmpty) {
-                                _updateStudent(
-                                  _nameController.text,
-                                  int.tryParse(_scoreController.text) ??
-                                      widget
-                                          .studentScore, // Handle potential parsing error
-                                );
-                              } else {
-                                _showSnackBarMessage(
-                                  message: 'Nome e pontuação são obrigatórios.',
-                                  backgroundColor: Colors.red,
-                                );
-                              }
-                            },
+                    onPressed: _handleEditClassRoom,
                     child:
                         _isLoading
                             ? const SizedBox(
@@ -127,25 +109,50 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     );
   }
 
-  Future<void> _updateStudent(String newName, int newScore) async {
+  void _handleEditClassRoom() {
+    if (_isLoading) {
+      return;
+    }
+
+    if (_nameController.text.isNotEmpty) {
+      _updateClassRoom(
+        _nameController.text,
+        widget.classRoom.code,
+        widget.classRoom.spreadSheetName,
+        SheetConfig.sheetListClassRoomsName, // Handle potential parsing error
+      );
+    } else {
+      _showSnackBarMessage(
+        message: 'Nome da turma não pode estar vazio.',
+        backgroundColor: Colors.red,
+      );
+    }
+  }
+
+  Future<void> _updateClassRoom(
+    String newName,
+    String newCode,
+    String currentSpreadSheetName,
+    String sheetNameToBeEdited,
+  ) async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      await updateGoogleSheetRow(
-        [newName, newScore],
-        widget.rowNumber,
+      await _googleSheetApi.updateGoogleSheetRow(
+        [newCode, newName, widget.classRoom.spreadSheetName],
+        widget.classRoom.rowId + 1,
         SheetConfig.spreadSheetId,
-        SheetConfig.sheetListStudentsName,
+        sheetNameToBeEdited,
       );
 
       if (mounted) {
-        Navigator.of(context).pop(true); // Indicate success
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       _showSnackBarMessage(
-        message: 'Erro ao atualizar aluno: $e',
+        message: 'Erro ao atualizar turma: $e',
         backgroundColor: Colors.red,
       );
     } finally {
@@ -155,6 +162,24 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
         });
       }
     }
+  }
+
+  Widget _renderTextField({
+    required TextEditingController fieldController,
+    required String hintText,
+    required String labelText,
+    required String fieldRegex,
+    required TextInputType fieldType,
+  }) {
+    return TextField(
+      controller: fieldController,
+      decoration: InputDecoration(hintText: hintText, labelText: labelText),
+      enabled: !_isLoading,
+      keyboardType: fieldType,
+      inputFormatters: <TextInputFormatter>[
+        FilteringTextInputFormatter.allow(RegExp(fieldRegex)),
+      ],
+    );
   }
 
   void _showSnackBarMessage({
