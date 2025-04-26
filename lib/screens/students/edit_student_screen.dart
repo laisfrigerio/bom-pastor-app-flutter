@@ -10,28 +10,36 @@ class EditStudentScreen extends StatefulWidget {
     required this.studentScore,
     required this.rowNumber,
     required this.spreadSheetName,
+    this.googleSheetApi,
   });
 
   final String spreadSheetName;
   final String studentName;
   final int studentScore;
   final int rowNumber;
+  final IGoogleSheetApi? googleSheetApi;
 
   @override
   State<EditStudentScreen> createState() => _EditStudentScreenState();
 }
 
 class _EditStudentScreenState extends State<EditStudentScreen> {
-  final GoogleSheetApi _googleSheetApi = GoogleSheetApi();
+  late IGoogleSheetApi _googleSheetApi;
 
   final TextEditingController _nameController = TextEditingController();
 
   bool _isLoading = false;
 
+  @visibleForTesting
+  set googleSheetApi(IGoogleSheetApi value) {
+    _googleSheetApi = value;
+  }
+
   @override
   void initState() {
     super.initState();
     _nameController.text = widget.studentName;
+    _googleSheetApi = widget.googleSheetApi ?? GoogleSheetApi();
   }
 
   @override
@@ -41,6 +49,11 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
         backgroundColor: AppColors.primaryColor,
         foregroundColor: Colors.white,
         title: const Text('Editar Aluno'),
+        leading: IconButton(
+          key: const Key('back_button'),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -90,7 +103,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                                 );
                               } else {
                                 _showSnackBarMessage(
-                                  message: 'Nome é obrigatório',
+                                  message: 'Campo Nome é obrigatório',
                                   backgroundColor: Colors.red,
                                 );
                               }
