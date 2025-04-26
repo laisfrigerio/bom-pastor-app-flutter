@@ -126,11 +126,7 @@ class _ListStudentsScreenState extends State<ListStudentsScreen> {
         _isLoading = false;
       });
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(backgroundColor: Colors.red, content: Text(e.toString())),
-        );
-      }
+      _showSnackBarMessage(message: e.toString(), backgroundColor: Colors.red);
     }
   }
 
@@ -218,9 +214,11 @@ class _ListStudentsScreenState extends State<ListStudentsScreen> {
     Color backgroundColor = AppColors.grey700,
   }) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(backgroundColor: backgroundColor, content: Text(message)),
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(backgroundColor: backgroundColor, content: Text(message)),
+        );
+      });
     }
   }
 }
